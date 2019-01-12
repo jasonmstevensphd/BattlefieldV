@@ -24,6 +24,7 @@ ROWS <- nrow(BFV)
 BFV$Entry <- seq(1:ROWS)
 
 KD_Time <- ggplot(BFV, aes(x = Entry, y = `K/D`))+
-  geom_point(aes(color = GameMode, shape = Weapon), size = 2)
+  geom_point(aes(color = GameMode, shape = Weapon), size = 2)+ 
+  geom_smooth(method='lm',formula=y~x)
 
 KD_Time
