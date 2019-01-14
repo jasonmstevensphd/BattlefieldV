@@ -56,7 +56,7 @@ Note that the `echo = FALSE` parameter was added to the code chunk to prevent pr
 
 ```{r Overview_Plot, echo=FALSE}
 
-Overview_Plot <- ggplot(BFV, aes(x = Map))+
+Overview_Plot <- ggplot(BFV, aes())+
   geom_bar(aes(GameMode, fill = Weapon))+
   facet_wrap(~Class)
   
