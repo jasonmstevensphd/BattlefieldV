@@ -1,0 +1,66 @@
+---
+title: "BattlefieldV_Report"
+author: '@jasonmstevens'
+date: "January 13, 2019"
+output:
+  html_document:
+    theme: journal
+    toc: yes
+    toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## A Data Science Journey through Battlefield V
+
+Here is some text
+
+```{r setup}
+
+library(tidyverse)
+library(readxl)
+library(lubridate)
+
+BFV <- read_xlsx("D:/Data_Science/BattlefieldV/Battlefield5.xlsx", sheet = "Sheet1") %>%
+  filter(!is.na(Date))
+
+ROWS <- nrow(BFV)
+AVG_KD <- mean(as.numeric(BFV$`K/D`), na.rm = TRUE)
+AVG_KD <- round(AVG_KD, digits = 3)
+Total_KD <- sum(as.numeric(BFV$Kills), na.rm = TRUE)/sum(as.numeric(BFV$Deaths), na.rm = TRUE)
+Total_KD <- round(Total_KD, digits = 3)
+Kills <- sum(as.numeric(BFV$Kills), na.rm = TRUE)
+Deaths <- sum(as.numeric(BFV$Deaths), na.rm = TRUE)
+
+DAY <- today(tzone = "America/New_York")
+
+PlayRange <- range(BFV$Date, na.rm = TRUE)
+
+```
+
+### A Snapshot of my Play Style and Skill
+
+Here is a breif overview of what kind of player I am. Mostly, I play for fun and the challenge the game offers. As can be seen below I would consider myself a mediocre player. 
+
+```{r Overview_Stats, echo=FALSE}
+
+paste0("I've tracked a total of ", ROWS, " rounds. During that the interval I've averaged a K/D of ", AVG_KD,
+       " and a total K/D of ", Total_KD, " (Kills = ", Kills, ", Deaths = ", Deaths, ").")
+
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+```{r Overview_Plot, echo=FALSE}
+
+Overview_Plot <- ggplot(BFV, aes(x = Map))+
+  geom_bar(aes(GameMode, fill = Weapon))+
+  facet_wrap(~Class)
+  
+
+Overview_Plot
+
+```
