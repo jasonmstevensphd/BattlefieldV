@@ -38,9 +38,24 @@ DAY <- today(tzone = "America/New_York")
 
 PlayRange <- range(BFV$Date, na.rm = TRUE)
 
+plot <- theme(plot.background = element_rect(fill = "white")) +
+        theme(panel.background = element_rect(fill = "white",
+                                              colour="grey50")) +
+        theme(plot.title = element_text(face = "bold",
+                                        size = 18,
+                                        color = "navy")) +
+        theme(axis.title = element_text(face = "bold",
+                                        size = 16)) +
+        theme(axis.text.x = element_text(vjust = 1,
+                                     hjust = 1,
+                                     size = 12,
+                                     angle = 60)) +
+        theme(axis.text.y = element_text(size = 12)) +
+        theme(aspect.ratio = 3.5/5)
+
 ```
 
-### A Snapshot of my Play Style and Skill
+### A Snapshot of My Play Style and Skill
 
 Here is a breif overview of what kind of player I am. Mostly, I play for fun and the challenge the game offers. As can be seen below I would consider myself a mediocre player. 
 
@@ -52,15 +67,86 @@ paste0("I've tracked a total of ", ROWS, " rounds. During that the interval I've
 
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+Here we can see the modes that I play and what weapons I use on each map. It's clear that I've played a lot of support and medic while I don't have any rounds as recon. Also, it appears that I tend to play the Conquest game mode with the highest frequency.
 
 ```{r Overview_Plot, echo=FALSE}
 
 Overview_Plot <- ggplot(BFV, aes())+
   geom_bar(aes(GameMode, fill = Weapon))+
-  facet_wrap(~Class)
+  facet_wrap(~Class) +
+  ggtitle("Number of Plays for each Game Mode") +
+  labs(x = "Game Mode", y = "Times Played") +
+  plot
   
 
 Overview_Plot
 
 ```
+
+A key part of the draw to gaming is the competitive nature and the challenge. Therefore, it was interesting to see whether or not I've been improving with each round. The plot below indicates that the variation in the outcome for matches varies greatly but the overall trend is clearly showing and increase in Kills per Deaths with increased lifetime rounds played.
+
+```{r KD_Plot, echo=FALSE}
+
+KD_Plot <- ggplot(BFV, aes(x = Entry, y = `K/D`))+
+  geom_point(aes(color = GameMode, shape = Weapon), size = 2)+ 
+  geom_smooth(method='lm',formula=y~x) +
+  ggtitle("Kills per Deaths over Time") +
+  labs(x = "Game Entry", y = "Kills/Deaths") +
+  plot
+  
+
+KD_Plot
+
+```
+
+We've established that I'm slowly but surely getting better playing mostly medic and support and that I have a preference for the conquest game mode. Now let's take a closer look at the maps that I play.
+
+```{r Maps_Plot, echo=FALSE}
+
+Maps_Plot <- ggplot(BFV, aes())+
+  geom_bar(aes(Map, fill = GameMode))+
+  ggtitle("Number of Plays for each Map") +
+  labs(x = "Map", y = "Times Played") +
+  plot
+  
+Maps_Plot
+
+```
+
+
+From this plot it can be seen that Hamada, Rotterdam and Narvik make up the bulk of my gameplay. The key question now is how well do I do on the maps that I play the most frequently.
+
+```{r Maps_Plot, echo=FALSE}
+
+MAP_KD <- BFV %>% group_by(Map, GameMode) %>%
+  summarize(Counts = n(), AVG_KD = mean(`K/D`))
+
+MAP_KD$AVG_KD <- round(MAP_KD$AVG_KD, digits = 2)
+
+MapKD_Plot <- ggplot(MAP_KD, aes(Map, AVG_KD))+
+  geom_boxplot()+
+  geom_point(aes(color = GameMode), size = 2)+
+  ggtitle("Average Kills per Death for each Map") +
+  labs(x = "Map", y = "Kills per Death") +
+  plot
+  
+MapKD_Plot
+
+```
+
+Text
+
+```{r Maps_Plot, echo=FALSE}
+
+MapCount_Plot <- ggplot(MAP_KD, aes(Counts, AVG_KD))+
+  geom_point(aes(color = Map, shape = GameMode), size = 2)+
+  ggtitle("Average KD per Map/Gamemode vs Times Played") +
+  labs(x = "Times Played", y = "Kills per Death") +
+  plot
+  
+MapCount_Plot
+
+```
+
+
+Text
