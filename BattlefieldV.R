@@ -1,7 +1,8 @@
 library(tidyverse)
 library(readxl)
 
-BFV <- read_xlsx("D:/Data_Science/BattlefieldV/Battlefield5.xlsx", sheet = "Sheet1")
+BFV <- read_xlsx("D:/Data_Science/BattlefieldV/Battlefield5.xlsx", sheet = "Sheet1") %>%
+  filter(!is.na(Date))
 
 KD_Plot <- ggplot(BFV, aes(x = `K/D`))+
   geom_density(aes(color = GameMode))
@@ -15,7 +16,8 @@ KD_Plot_Map <- ggplot(BFV, aes(x = `K/D`))+
 KD_Plot_Map
 
 KD_Plot_Weapon <- ggplot(BFV, aes(x = `K/D`))+
-  geom_density(aes(color = Weapon))
+  geom_density(aes(color = Weapon))+
+  facet_wrap(~Class)
 
 KD_Plot_Weapon
 
