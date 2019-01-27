@@ -17,7 +17,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Here is some text
 
-```{r setup}
+```{r Initiate}
 
 library(tidyverse)
 library(readxl)
@@ -88,7 +88,7 @@ A key part of the draw to gaming is the competitive nature and the challenge. Th
 ```{r KD_Plot, echo=FALSE}
 
 KD_Plot <- ggplot(BFV, aes(x = Entry, y = `K/D`))+
-  geom_point(aes(color = GameMode, shape = Weapon), size = 2) + 
+  geom_point(aes(color = GameMode, shape = Class), size = 2) + 
   geom_smooth(method = 'lm', formula = y ~ x) +
   ggtitle("Kills per Deaths over Time") +
   labs(x = "Game Entry", y = "Kills/Deaths") +
@@ -103,7 +103,7 @@ KD_Plot
 
 We've established that I'm slowly but surely getting better playing mostly medic and support and that I have a preference for the conquest game mode. Now let's take a closer look at the maps that I play. From the plot below it can be seen that Hamada, Rotterdam and Narvik make up the bulk of my gameplay. An interesting question is how well do I do on the maps that I play the most frequently.
 
-```{r Maps_Plot, echo=FALSE}
+```{r MapPlays_Plot, echo=FALSE}
 
 Maps_Plot <- ggplot(BFV, aes())+
   geom_bar(aes(Map, fill = GameMode))+
@@ -118,7 +118,7 @@ Maps_Plot
 
 Inspecting my average K/D per map it is evident that Fjell 652 and Panzerstorm are definitely my best maps although the maps I play most frequently are Hamada, Rotterdam and Narvik which are my 6th, 5th and 3rd best maps.
 
-```{r Maps_Plot, echo=FALSE}
+```{r MapsKD_Plot, echo=FALSE}
 
 MAP_KD <- BFV %>% group_by(Map, GameMode) %>%
   summarize(Counts = n(), AVG_KD = mean(`K/D`))
@@ -138,7 +138,7 @@ MapKD_Plot
 
 The above data are a bit strange as there doesn't seem to be any relation between my play and the type of map. Fjell 652 and Panzerstorm are my two best maps yet complete polar opposites in terms of map layout and gameplay. To see if there is a simple correlation between whether or not my performance is related to the number of time I've played the map I plotted my average KD for each gamemode and map vs times played. The result is that there is a weak correlation.
 
-```{r Maps_Plot, echo=FALSE}
+```{r MapMode_Plot, echo=FALSE}
 
 MapCount_Plot <- ggplot(MAP_KD, aes(Counts, AVG_KD)) +
   geom_point(aes(color = Map, shape = GameMode), size = 2) +
@@ -155,3 +155,85 @@ MapCount_Plot
 Up to this point we've determined that I am clearly getting better as I continue to play and that my performance on each map is loosely correlated to the number of times I've played a game mode on a given map. Now we will dig a bit deeper into my gameplay for each class.
 
 ###Medic Class
+
+The medic class was a natural fit for me as I overwhelmingly played assault in BF1 and the SMG's are my go to. However, the medic class is exceptionally difficult to play in BFV due to the limited range of the SMG's and the 5 hit kills required with most of them. Let's first see if my medic play has been improving over time.
+
+```{r MedicKD_Plot, echo=FALSE}
+
+Medic <- BFV %>% filter(Class == 'Medic')
+
+MedicKD_Plot <- ggplot(Medic, aes(x = Entry, y = `K/D`))+
+  geom_point(aes(color = GameMode, shape = Weapon), size = 2) + 
+  geom_smooth(method = 'lm', formula = y ~ x) +
+  ggtitle("Kills per Deaths over Time as Medic Class") +
+  labs(x = "Game Entry", y = "Kills/Deaths") +
+  plot
+  
+
+MedicKD_Plot
+
+```
+
+It also appears as though my average is increasing over time while playing medic. When we take a look at my gameplay as a medic for each map we see that my gameplay is fairly consistent although for some reason I do very well on Fjell 652 and Panzerstorm.
+
+```{r MedicMapsKD_Plot, echo=FALSE}
+
+MAPMedic_KD <- Medic %>% group_by(Map, GameMode) %>%
+  summarize(Counts = n(), AVG_KD = mean(`K/D`))
+
+MAPMedic_KD$AVG_KD <- round(MAPMedic_KD$AVG_KD, digits = 2)
+
+MapMedicKD_Plot <- ggplot(MAPMedic_KD, aes(Map, AVG_KD))+
+  geom_boxplot()+
+  geom_point(aes(color = GameMode), size = 2)+
+  ggtitle("Average Kills per Death for each Map") +
+  labs(x = "Map", y = "Kills per Death") +
+  plot
+  
+MapMedicKD_Plot
+
+```
+
+### Assault Class
+
+The medic class was a natural fit for me as I overwhelmingly played assault in BF1 and the SMG's are my go to. However, the medic class is exceptionally difficult to play in BFV due to the limited range of the SMG's and the 5 hit kills required with most of them. Let's first see if my medic play has been improving over time.
+
+```{r AssaultKD_Plot, echo=FALSE}
+
+Assault <- BFV %>% filter(Class == 'Assault')
+
+AssaultKD_Plot <- ggplot(Assault, aes(x = Entry, y = `K/D`))+
+  geom_point(aes(color = GameMode, shape = Weapon), size = 2) + 
+  geom_smooth(method = 'lm', formula = y ~ x) +
+  ggtitle("Kills per Deaths over Time as Assault Class") +
+  labs(x = "Game Entry", y = "Kills/Deaths") +
+  plot
+  
+
+AssaultKD_Plot
+
+```
+
+Text
+
+```{r MedicMapsKD_Plot, echo=FALSE}
+
+MAPAssault_KD <- Assault %>% group_by(Map, GameMode) %>%
+  summarize(Counts = n(), AVG_KD = mean(`K/D`))
+
+MAPAssault_KD$AVG_KD <- round(MAPAssault_KD$AVG_KD, digits = 2)
+
+MapAssaultKD_Plot <- ggplot(MAPAssault_KD, aes(Map, AVG_KD))+
+  geom_boxplot()+
+  geom_point(aes(color = GameMode), size = 2)+
+  ggtitle("Average Kills per Death for each Map") +
+  labs(x = "Map", y = "Kills per Death") +
+  plot
+  
+MapAssaultKD_Plot
+
+```
+
+
+
+
