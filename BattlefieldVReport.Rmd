@@ -13,9 +13,9 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## A Data Science Journey through Battlefield V
+## A Data Driven Approach to Battlefield V
 
-Here is some text
+The purpose of this project is to analyze my play style and identify ways to improve. The  data for this experiment comes from manual entering values after each match. The critical factors are date, map, gamemode, offense/neutral/defense, class, weapon, assignment, assignment type, practice range, full game, win, game score, kills and deaths. Additionally it will be interesting to construct models based on metrics for maps and weapons that could be used to predict how well I might play with a new weapon or on a new map as the Tides of War continue.
 
 ```{r Initiate}
 
@@ -58,7 +58,7 @@ plot <- theme(plot.background = element_rect(fill = "white")) +
 
 ### A Snapshot of My Play Style and Skill
 
-Here is a breif overview of what kind of player I am. Mostly, I play for fun and the challenge the game offers. As can be seen below I would consider myself a mediocre player. 
+Here is a brief overview of what kind of player I am. Mostly, I play for fun and the challenge the game offers and I would consider myself a mediocre player. I typically play about 8 rounds on weeknights and around 10 rounds on the weekend. 
 
 ```{r Overview_Stats, echo=FALSE}
 
@@ -67,12 +67,12 @@ paste0("I've tracked a total of ", ROWS, " rounds. During that the interval I've
 
 ```
 
-Here we can see the modes that I play and what weapons I use on each map. It's clear that I've played a lot of support and medic while I don't have any rounds as recon. Also, it appears that I tend to play the Conquest game mode with the highest frequency.
+Here we can see the modes that I play and what weapons I use on each map.
 
 ```{r Overview_Plot, echo=FALSE}
 
 Overview_Plot <- ggplot(BFV, aes())+
-  geom_bar(aes(GameMode, fill = Weapon))+
+  geom_bar(aes(GameMode, fill = Map))+
   facet_wrap(~Class) +
   ggtitle("Number of Plays for each Game Mode") +
   labs(x = "Game Mode", y = "Times Played") +
@@ -83,7 +83,7 @@ Overview_Plot
 
 ```
 
-A key part of the draw to gaming is the competitive nature and the challenge. Therefore, it was interesting to see whether or not I've been improving with each round. The plot below indicates that the variation in the outcome for matches varies greatly but the overall trend is clearly showing and increase in Kills per Deaths with increased lifetime rounds played.
+A key part of the draw to gaming is the competitive nature and the challenge. Therefore, it was interesting to see whether or not I've been improving with each round. First, we can look at K/D as a metric of performance. The plot below indicates that the variation in the outcome for matches varies greatly but the overall trend is clearly showing and increase in Kills per Deaths with increased lifetime rounds played.
 
 ```{r KD_Plot, echo=FALSE}
 
@@ -99,9 +99,28 @@ KD_Plot
 
 ```
 
-###Maps
+Next, we can look at gamescore as a metric of performance. The plot below indicates that the variation in the outcome for matches varies greatly but the overall trend is clearly showing and increase in Kills per Deaths with increased lifetime rounds played.
 
-We've established that I'm slowly but surely getting better playing mostly medic and support and that I have a preference for the conquest game mode. Now let's take a closer look at the maps that I play. From the plot below it can be seen that Hamada, Rotterdam and Narvik make up the bulk of my gameplay. An interesting question is how well do I do on the maps that I play the most frequently.
+```{r GameScore_Plot, echo=FALSE}
+
+GameScore <- BFV %>% filter(Entry > 64)
+
+GameScore_Plot <- ggplot(GameScore, aes(x = Entry, y = `GameScore`))+
+  geom_point(aes(color = Result, shape = Class), size = 2) + 
+  geom_smooth(method = 'lm', formula = y ~ x) +
+  ggtitle("Game Score over Time") +
+  labs(x = "Game Entry", y = "Game Score") +
+  facet_wrap(~ GameMode)
+  plot
+  
+
+GameScore_Plot
+
+```
+
+### Maps
+
+Now let's take a closer look at the maps that I play. An interesting question is how well do I do on the maps that I play the most frequently as well as whether there are any correlations with the maps that work best with my playstyle.
 
 ```{r MapPlays_Plot, echo=FALSE}
 
@@ -216,7 +235,7 @@ AssaultKD_Plot
 
 Text
 
-```{r MedicMapsKD_Plot, echo=FALSE}
+```{r AssaultMapsKD_Plot, echo=FALSE}
 
 MAPAssault_KD <- Assault %>% group_by(Map, GameMode) %>%
   summarize(Counts = n(), AVG_KD = mean(`K/D`))
