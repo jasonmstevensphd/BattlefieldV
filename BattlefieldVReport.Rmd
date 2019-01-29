@@ -10,14 +10,14 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
 
 ## A Data Driven Approach to Battlefield V
 
 The purpose of this project is to analyze my play style and identify ways to improve. The  data for this experiment comes from manual entering values after each match. If you happen to know how to gain access to the battlefield tracker API please let me know. The critical factors are date, map, gamemode, offense/neutral/defense, class, weapon, assignment, assignment type, practice range, full game, win, game score, kills and deaths. Additionally, it will be interesting to construct models based on metrics for maps and weapons that could be used to predict how well I might play with a new weapon or on a new map as the Tides of War continue.
 
-```{r Initiate, echo=FALSE}
+```{r Initiate, echo=FALSE, message=FALSE, warning=FALSE}
 
 library(tidyverse)
 library(readxl)
@@ -60,7 +60,7 @@ plot <- theme(plot.background = element_rect(fill = "white")) +
 
 Here is a brief overview of what kind of player I am. Mostly, I play for fun and the challenge the game offers and I would consider myself a mediocre player. I typically play about 8 rounds on weeknights and around 10 rounds on the weekend. 
 
-```{r Overview_Stats, echo=FALSE}
+```{r Overview_Stats, echo=FALSE, message=FALSE, warning=FALSE}
 
 paste0("I've tracked a total of ", ROWS, " rounds. During that the interval I've averaged a K/D of ", AVG_KD,
        " and a total K/D of ", Total_KD, " (Kills = ", Kills, ", Deaths = ", Deaths, ").")
@@ -69,7 +69,7 @@ paste0("I've tracked a total of ", ROWS, " rounds. During that the interval I've
 
 Here we can see the modes that I play and what weapons I use on each map.
 
-```{r Overview_Plot, echo=FALSE}
+```{r Overview_Plot, echo=FALSE, message=FALSE, warning=FALSE}
 
 Overview_Plot <- ggplot(BFV, aes())+
   geom_bar(aes(GameMode, fill = Map))+
@@ -85,7 +85,7 @@ Overview_Plot
 
 A key part of the draw to gaming is the competitive nature and the challenge. Therefore, it was interesting to see whether or not I've been improving with each round. First, we can look at K/D as a metric of performance. The plot below indicates that the variation in the outcome for matches varies greatly but the overall trend is clearly showing and increase in Kills per Deaths with increased lifetime rounds played.
 
-```{r KD_Plot, echo=FALSE}
+```{r KD_Plot, echo=FALSE, message=FALSE, warning=FALSE}
 
 KD_Plot <- ggplot(BFV, aes(x = Entry, y = `K/D`))+
   geom_point(aes(color = GameMode, shape = Class), size = 2) + 
@@ -101,7 +101,7 @@ KD_Plot
 
 Next, we can look at gamescore as a metric of performance. The plot below indicates that the variation in the outcome for matches varies greatly but the overall trend is clearly showing and increase in Kills per Deaths with increased lifetime rounds played.
 
-```{r GameScore_Plot, echo=FALSE}
+```{r GameScore_Plot, echo=FALSE, message=FALSE, warning=FALSE}
 
 GameScore <- BFV %>% filter(Entry > 64)
 
@@ -110,7 +110,7 @@ GameScore_Plot <- ggplot(GameScore, aes(x = Entry, y = `GameScore`))+
   geom_smooth(method = 'lm', formula = y ~ x) +
   ggtitle("Game Score over Time") +
   labs(x = "Game Entry", y = "Game Score") +
-  facet_wrap(~ GameMode)
+  facet_wrap(~ GameMode) +
   plot
   
 
@@ -122,7 +122,7 @@ GameScore_Plot
 
 Now let's take a closer look at the maps that I play. An interesting question is how well do I do on the maps that I play the most frequently as well as whether there are any correlations with the maps that work best with my playstyle.
 
-```{r MapPlays_Plot, echo=FALSE}
+```{r MapPlays_Plot, echo=FALSE, message=FALSE, warning=FALSE}
 
 Maps_Plot <- ggplot(BFV, aes())+
   geom_bar(aes(Map, fill = GameMode))+
@@ -137,7 +137,7 @@ Maps_Plot
 
 Inspecting my average K/D per map it is evident that Fjell 652 and Panzerstorm are definitely my best maps although the maps I play most frequently are Hamada, Rotterdam and Narvik which are my 6th, 5th and 3rd best maps.
 
-```{r MapsKD_Plot, echo=FALSE}
+```{r MapsKD_Plot, echo=FALSE, message=FALSE, warning=FALSE}
 
 MAP_KD <- BFV %>% group_by(Map, GameMode) %>%
   summarize(Counts = n(), AVG_KD = mean(`K/D`))
@@ -157,7 +157,7 @@ MapKD_Plot
 
 The above data are a bit strange as there doesn't seem to be any relation between my play and the type of map. Fjell 652 and Panzerstorm are my two best maps yet complete polar opposites in terms of map layout and gameplay, or are they? To see if there is a simple correlation between whether or not my performance is related to the number of time I've played the map I plotted my average KD for each gamemode and map vs times played. The result is that there is a weak correlation.
 
-```{r MapMode_Plot, echo=FALSE}
+```{r MapMode_Plot, echo=FALSE, message=FALSE, warning=FALSE}
 
 MapCount_Plot <- ggplot(MAP_KD, aes(Counts, AVG_KD)) +
   geom_point(aes(color = Map, shape = GameMode), size = 2) +
