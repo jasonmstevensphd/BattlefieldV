@@ -144,7 +144,7 @@ MAP_KD <- BFV %>% group_by(Map, GameMode) %>%
 
 MAP_KD$AVG_KD <- round(MAP_KD$AVG_KD, digits = 2)
 
-MapKD_Plot <- ggplot(MAP_KD, aes(Map, AVG_KD))+
+MapKD_Plot <- ggplot(MAP_KD, aes(x = reorder(Map, AVG_KD, FUN = mean), y =  AVG_KD))+
   geom_boxplot()+
   geom_point(aes(color = GameMode), size = 2)+
   ggtitle("Average Kills per Death for each Map") +
@@ -173,7 +173,7 @@ MapCount_Plot
 
 Up to this point we've determined that I am clearly getting better as I continue to play and that my performance on each map is loosely correlated to the number of times I've played a game mode on a given map. Now we will dig a bit deeper into my gameplay for each class.
 
-###Medic Class
+### Medic Class
 
 The medic class was a natural fit for me as I overwhelmingly played assault in BF1 and the SMG's are my go to. However, the medic class is exceptionally difficult to play in BFV due to the limited range of the SMG's and the 5 hit kills required with most of them. Let's first see if my medic play has been improving over time.
 
@@ -202,7 +202,7 @@ MAPMedic_KD <- Medic %>% group_by(Map, GameMode) %>%
 
 MAPMedic_KD$AVG_KD <- round(MAPMedic_KD$AVG_KD, digits = 2)
 
-MapMedicKD_Plot <- ggplot(MAPMedic_KD, aes(Map, AVG_KD))+
+MapMedicKD_Plot <- ggplot(MAPMedic_KD, aes(x = reorder(Map, AVG_KD, FUN = mean), y =  AVG_KD))+
   geom_boxplot()+
   geom_point(aes(color = GameMode), size = 2)+
   ggtitle("Average Kills per Death for each Map") +
@@ -233,7 +233,7 @@ AssaultKD_Plot
 
 ```
 
-Looking at my play on each map shows some interesting deviation from my play as medic.
+Looking at my play on each map shows some interesting deviation from my play as assault.
 
 ```{r AssaultMapsKD_Plot, echo=FALSE}
 
@@ -242,7 +242,7 @@ MAPAssault_KD <- Assault %>% group_by(Map, GameMode) %>%
 
 MAPAssault_KD$AVG_KD <- round(MAPAssault_KD$AVG_KD, digits = 2)
 
-MapAssaultKD_Plot <- ggplot(MAPAssault_KD, aes(Map, AVG_KD))+
+MapAssaultKD_Plot <- ggplot(MAPAssault_KD, aes(x = reorder(Map, AVG_KD, FUN = mean), y = AVG_KD))+
   geom_boxplot()+
   geom_point(aes(color = GameMode), size = 2)+
   ggtitle("Average Kills per Death for each Map") +
@@ -253,6 +253,42 @@ MapAssaultKD_Plot
 
 ```
 
+### Support Class
 
+The assault class I found to be challenging as I like the high rate of fire but the recoil is difficult to manage. In a similar sense the self-loading rifles are powerful but they require a bit better aim than I'm throwing down right now. Let's see if my assault play has been improving over time.
 
+```{r SupportKD_Plot, echo=FALSE}
 
+Support <- BFV %>% filter(Class == 'Support')
+
+SupportKD_Plot <- ggplot(Support, aes(x = Entry, y = `K/D`))+
+  geom_point(aes(color = GameMode, shape = Weapon), size = 2) + 
+  geom_smooth(method = 'lm', formula = y ~ x) +
+  ggtitle("Kills per Deaths over Time as Support Class") +
+  labs(x = "Game Entry", y = "Kills/Deaths") +
+  plot
+  
+
+SupportKD_Plot
+
+```
+
+Looking at my play on each map shows some interesting deviation from my play as support.
+
+```{r AssaultMapsKD_Plot, echo=FALSE}
+
+MAPSupport_KD <- Support %>% group_by(Map, GameMode) %>%
+  summarize(Counts = n(), AVG_KD = mean(`K/D`))
+
+MAPSupport_KD$AVG_KD <- round(MAPSupport_KD$AVG_KD, digits = 2)
+
+MapSupportKD_Plot <- ggplot(MAPSupport_KD, aes(x = reorder(Map, AVG_KD, FUN = mean), y = AVG_KD))+
+  geom_boxplot()+
+  geom_point(aes(color = GameMode), size = 2)+
+  ggtitle("Average Kills per Death for each Map") +
+  labs(x = "Map", y = "Kills per Death") +
+  plot
+  
+MapSupportKD_Plot
+
+```
