@@ -99,6 +99,24 @@ KD_Plot
 
 ```
 
+```{r KD_perDayPlot, echo=FALSE, message=FALSE, warning=FALSE}
+
+KD_perDay <- BFV %>% group_by(Date)%>%
+  summarise(Kills = sum(Kills), Deaths = sum(Deaths), Count = n()) %>%
+  mutate(`Net_K/D` = Kills/Deaths)
+
+KD_perDay_Plot <- ggplot(KD_perDay, aes(x = Date, y = `Net_K/D`))+
+  geom_point(aes(color = Count), size = 2) + 
+  geom_smooth(method = 'lm', formula = y ~ x) +
+  ggtitle("Net K/D per Day over Time") +
+  labs(x = "Day", y = "Kills/Deaths") +
+  plot
+  
+
+KD_perDay_Plot
+
+```
+
 Next, we can look at gamescore as a metric of performance. The plot below indicates that the variation in the outcome for matches varies greatly but the overall trend is clearly showing and increase in Kills per Deaths with increased lifetime rounds played.
 
 ```{r GameScore_Plot, echo=FALSE, message=FALSE, warning=FALSE}
@@ -275,7 +293,7 @@ SupportKD_Plot
 
 Looking at my play on each map shows some interesting deviation from my play as support.
 
-```{r AssaultMapsKD_Plot, echo=FALSE}
+```{r SupportMapsKD_Plot, echo=FALSE}
 
 MAPSupport_KD <- Support %>% group_by(Map, GameMode) %>%
   summarize(Counts = n(), AVG_KD = mean(`K/D`))
