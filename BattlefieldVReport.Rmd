@@ -9,10 +9,6 @@ output:
     toc_depth: 3
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
-```
-
 ## A Data Driven Approach to Battlefield V
 
 The purpose of this project is to analyze my play style and identify ways to improve. The  data for this experiment comes from manual entering values after each match. If you happen to know how to gain access to the battlefield tracker API please let me know. The critical factors are date, map, gamemode, offense/neutral/defense, class, weapon, assignment, assignment type, practice range, full game, win, game score, kills and deaths. Additionally, it will be interesting to construct models based on metrics for maps and weapons that could be used to predict how well I might play with a new weapon or on a new map as the Tides of War continue.
@@ -24,7 +20,8 @@ library(readxl)
 library(lubridate)
 
 BFV <- read_xlsx("D:/Data_Science/BattlefieldV/Battlefield5.xlsx", sheet = "Sheet1") %>%
-  filter(!is.na(Date))
+  filter(!is.na(Date)) %>%
+  mutate(`Net_K/D` = Kills-Deaths)
 
 ROWS <- nrow(BFV)
 AVG_KD <- mean(as.numeric(BFV$`K/D`), na.rm = TRUE)
@@ -56,36 +53,20 @@ plot <- theme(plot.background = element_rect(fill = "white")) +
 
 ```
 
-### A Snapshot of My Play Style and Skill
+### Introduction
 
-Here is a brief overview of what kind of player I am. Mostly, I play for fun and the challenge the game offers and I would consider myself a mediocre player. I typically play about 8 rounds on weeknights and around 10 rounds on the weekend. 
+Here is a brief overview of some of my statistics as a Battlefield V player. As part of this exercise I've restricted myself to some gameplay constraints. First, when I choose a weapon for a match I will play with that weapon until the match ends. The second constraint is that I will never leave a match before the end. The only exception to leaving the match is if when I enter the match I find myself on a team that is losing badly <i>and</i> it is close to the end of the game. If that condition is met I will immediately exit the server.
 
-```{r Overview_Stats, echo=FALSE, message=FALSE, warning=FALSE}
+```{r Overview_Stats, echo = FALSE, message = FALSE, warning = FALSE}
 
 paste0("I've tracked a total of ", ROWS, " rounds. During that the interval I've averaged a K/D of ", AVG_KD,
        " and a total K/D of ", Total_KD, " (Kills = ", Kills, ", Deaths = ", Deaths, ").")
 
 ```
 
-Here we can see the modes that I play and what weapons I use on each map.
+Here is a look at K/D as a metric of performance. The goal of this plot is to determine whether or not I'm improving over time.
 
-```{r Overview_Plot, echo=FALSE, message=FALSE, warning=FALSE}
-
-Overview_Plot <- ggplot(BFV, aes())+
-  geom_bar(aes(GameMode, fill = Map))+
-  facet_wrap(~Class) +
-  ggtitle("Number of Plays for each Game Mode") +
-  labs(x = "Game Mode", y = "Times Played") +
-  plot
-  
-
-Overview_Plot
-
-```
-
-A key part of the draw to gaming is the competitive nature and the challenge. Therefore, it was interesting to see whether or not I've been improving with each round. First, we can look at K/D as a metric of performance. The plot below indicates that the variation in the outcome for matches varies greatly but the overall trend is clearly showing and increase in Kills per Deaths with increased lifetime rounds played.
-
-```{r KD_Plot, echo=FALSE, message=FALSE, warning=FALSE}
+```{r KD_Plot, echo = FALSE, message = FALSE, warning = FALSE}
 
 KD_Plot <- ggplot(BFV, aes(x = Entry, y = `K/D`))+
   geom_point(aes(color = GameMode, shape = Class), size = 2) + 
@@ -99,6 +80,8 @@ KD_Plot
 
 ```
 
+The same type of analysis can be performed by looking at my average K/D for each day that I have played.
+
 ```{r KD_perDayPlot, echo=FALSE, message=FALSE, warning=FALSE}
 
 KD_perDay <- BFV %>% group_by(Date)%>%
@@ -106,7 +89,7 @@ KD_perDay <- BFV %>% group_by(Date)%>%
   mutate(`Net_K/D` = Kills/Deaths)
 
 KD_perDay_Plot <- ggplot(KD_perDay, aes(x = Date, y = `Net_K/D`))+
-  geom_point(aes(color = Count), size = 2) + 
+  geom_point(aes(size = Count)) + 
   geom_smooth(method = 'lm', formula = y ~ x) +
   ggtitle("Net K/D per Day over Time") +
   labs(x = "Day", y = "Kills/Deaths") +
@@ -117,7 +100,39 @@ KD_perDay_Plot
 
 ```
 
-Next, we can look at gamescore as a metric of performance. The plot below indicates that the variation in the outcome for matches varies greatly but the overall trend is clearly showing and increase in Kills per Deaths with increased lifetime rounds played.
+A histogram shows the distribution of my K/D.
+
+```{r KD_Hist, echo=FALSE, message=FALSE, warning=FALSE}
+
+KD_Hist <- ggplot(BFV, aes(x = `K/D`))+
+  geom_histogram(aes(fill = Class)) +
+  ggtitle("Distribution of K/D Results") +
+  labs(x = "Kills per Deaths", y = "Counts") +
+  plot
+  
+
+KD_Hist
+
+```
+
+We can look at the overall distribution of net K/D scores.
+
+```{r NetKD_Hist, echo=FALSE, message=FALSE, warning=FALSE}
+
+Net <- BFV %>% mutate(`Net_K/D` = Kills-Deaths)
+
+NetKD_Hist <- ggplot(Net, aes(x = `Net_K/D`))+
+  geom_histogram(bins = 30, aes(fill = Class)) +
+  ggtitle("Distribution of Net K/D Results") +
+  labs(x = "Net Kills per Deaths", y = "Counts") +
+  plot
+  
+
+NetKD_Hist
+
+```
+
+Gamescore can also be used as a metric of performance. The plot below indicates that the variation in the outcome for matches based on the type of game mode.
 
 ```{r GameScore_Plot, echo=FALSE, message=FALSE, warning=FALSE}
 
@@ -191,7 +206,25 @@ MapCount_Plot
 
 Up to this point we've determined that I am clearly getting better as I continue to play and that my performance on each map is loosely correlated to the number of times I've played a game mode on a given map. Now we will dig a bit deeper into my gameplay for each class.
 
-### Medic Class
+### Game Modes
+ Here we can see the modes that I play and what weapons I use on each map.
+
+```{r Overview_Plot, echo=FALSE, message=FALSE, warning=FALSE}
+
+Overview_Plot <- ggplot(BFV, aes())+
+  geom_bar(aes(GameMode, fill = Map))+
+  facet_wrap(~Class) +
+  ggtitle("Number of Plays for each Game Mode") +
+  labs(x = "Game Mode", y = "Times Played") +
+  plot
+  
+
+Overview_Plot
+
+```
+
+### Classes
+#### Medic Class
 
 The medic class was a natural fit for me as I overwhelmingly played assault in BF1 and the SMG's are my go to. However, the medic class is exceptionally difficult to play in BFV due to the limited range of the SMG's and the 5 hit kills required with most of them. Let's first see if my medic play has been improving over time.
 
@@ -231,7 +264,23 @@ MapMedicKD_Plot
 
 ```
 
-### Assault Class
+Text
+
+```{r MedicHist, echo=FALSE}
+
+Medic_Hist <- ggplot(Medic, aes(x = `K/D`, fill = Weapon))+
+  geom_histogram(bins = 20) +
+  ggtitle("Distribution of Kills per Deaths\nover Time as Medic Class") +
+  labs(x = "Kills/Deaths", y = "Counts") +
+  plot
+  
+
+Medic_Hist
+
+```
+
+
+#### Assault Class
 
 The assault class I found to be challenging as I like the high rate of fire but the recoil is difficult to manage. In a similar sense the self-loading rifles are powerful but they require a bit better aim than I'm throwing down right now. Let's see if my assault play has been improving over time.
 
@@ -251,7 +300,23 @@ AssaultKD_Plot
 
 ```
 
-Looking at my play on each map shows some interesting deviation from my play as assault.
+
+Text
+
+```{r AssaultHist, echo=FALSE}
+
+Assault_Hist <- ggplot(Assault, aes(x = `K/D`, fill = Weapon))+
+  geom_histogram(bins = 10) +
+  ggtitle("Distribution of Kills per Deaths\nover Time as Assault Class") +
+  labs(x = "Kills/Deaths", y = "Counts") +
+  plot
+  
+
+Assault_Hist
+
+```
+
+The assault class I found to be challenging as I like the high rate of fire but the recoil is difficult to manage. In a similar sense the self-loading rifles are powerful but they require a bit better aim than I'm throwing down right now. Let's see if my assault play has been improving over time.
 
 ```{r AssaultMapsKD_Plot, echo=FALSE}
 
@@ -271,7 +336,7 @@ MapAssaultKD_Plot
 
 ```
 
-### Support Class
+#### Support Class
 
 The assault class I found to be challenging as I like the high rate of fire but the recoil is difficult to manage. In a similar sense the self-loading rifles are powerful but they require a bit better aim than I'm throwing down right now. Let's see if my assault play has been improving over time.
 
@@ -291,6 +356,23 @@ SupportKD_Plot
 
 ```
 
+
+Text
+
+```{r SupportHist, echo=FALSE}
+
+Support_Hist <- ggplot(Support, aes(x = `K/D`, fill = Weapon))+
+  geom_histogram(bins = 15) +
+  ggtitle("Distribution of Kills per Deaths\nover Time as Support Class") +
+  labs(x = "Kills/Deaths", y = "Counts") +
+  plot
+  
+
+Support_Hist
+
+```
+
+
 Looking at my play on each map shows some interesting deviation from my play as support.
 
 ```{r SupportMapsKD_Plot, echo=FALSE}
@@ -308,5 +390,29 @@ MapSupportKD_Plot <- ggplot(MAPSupport_KD, aes(x = reorder(Map, AVG_KD, FUN = me
   plot
   
 MapSupportKD_Plot
+
+```
+
+### Prediction
+
+Let's see a distribution of results for the conditions I'm currently playing
+
+```{r Current_Plot, echo=FALSE}
+
+Current_Map <- "Aerodrome"
+Game_Mode <- "Breakthrough"
+Gun <- "STG 44"
+
+Current_Data <- BFV %>% filter(Map == Current_Map) %>%
+  filter(GameMode == Game_Mode) %>%
+  filter(Weapon == Gun)
+
+CurrentData_Plot <- ggplot(Current_Data, aes(x = Entry, y = `K/D`))+
+  geom_point(aes(color = GameMode, shape = Side), size = 2) +
+  ggtitle("Kills per Deaths over Time under these Conditions") +
+  labs(x = "Game Entry", y = "Kills/Deaths")
+  
+
+CurrentData_Plot
 
 ```
