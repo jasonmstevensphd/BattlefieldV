@@ -21,7 +21,47 @@ library(lubridate)
 
 BFV <- read_xlsx("D:/Data_Science/BattlefieldV/Battlefield5.xlsx", sheet = "Sheet1") %>%
   filter(!is.na(Date)) %>%
-  mutate(`Net_K/D` = Kills-Deaths)
+  mutate(`Net_K/D` = Kills-Deaths) %>%
+  mutate(`K/D` = Kills/Deaths)
+
+BFV$Entry <- seq(1:nrow(BFV))
+
+output <- vector("double", nrow(BFV))
+
+for (i in seq_along(BFV$`K/D`)) {
+  
+  output[[i]] = mean(BFV$`K/D`[1:i])
+  
+  output
+  
+}
+
+BFV$Cumulative_MeanKD <- output
+
+output_MeanNet <- vector("double", nrow(BFV))
+
+for (i in seq_along(BFV$`Net_K/D`)) {
+  
+  output_MeanNet[[i]] = mean(BFV$`Net_K/D`[1:i])
+  
+  output_MeanNet
+  
+}
+
+BFV$Cumulative_MeanNetKD <- output_MeanNet
+
+output_TotalNet <- vector("double", nrow(BFV))
+
+for (i in seq_along(BFV$`Net_K/D`)) {
+  
+  output_TotalNet[[i]] = sum(BFV$`Net_K/D`[1:i])
+  
+  output_TotalNet
+  
+}
+
+BFV$Cumulative_TotalNetKD <- output_TotalNet
+
 
 ROWS <- nrow(BFV)
 AVG_KD <- mean(as.numeric(BFV$`K/D`), na.rm = TRUE)
@@ -59,20 +99,19 @@ Here is a brief overview of some of my statistics as a Battlefield V player. As 
 
 ```{r Overview_Stats, echo = FALSE, message = FALSE, warning = FALSE}
 
-paste0("I've tracked a total of ", ROWS, " rounds. During that the interval I've averaged a K/D of ", AVG_KD,
-       " and a total K/D of ", Total_KD, " (Kills = ", Kills, ", Deaths = ", Deaths, ").")
+paste0("I've tracked a total of ", ROWS, " rounds. During that the interval I have a total K/D of ", Total_KD, " (Kills = ", Kills, ", Deaths = ", Deaths, ").")
 
 ```
 
-Here is a look at K/D as a metric of performance. The goal of this plot is to determine whether or not I'm improving over time.
+Here is a look at cumulative mean K/D as a metric of performance. The goal of this plot is to determine whether or not I'm improving over time. If this is the case we would expect that my average net kills over time will be increasing.
 
 ```{r KD_Plot, echo = FALSE, message = FALSE, warning = FALSE}
 
-KD_Plot <- ggplot(BFV, aes(x = Entry, y = `K/D`))+
+KD_Plot <- ggplot(BFV, aes(x = Entry, y = `Cumulative_MeanKD`))+
   geom_point(aes(color = GameMode, shape = Class), size = 2) + 
   geom_smooth(method = 'lm', formula = y ~ x) +
-  ggtitle("Kills per Deaths over Time") +
-  labs(x = "Game Entry", y = "Kills/Deaths") +
+  ggtitle("Ascending Cumulative Mean KD") +
+  labs(x = "Game Entry", y = "Cumulative Mean Kills/Deaths") +
   plot
   
 
@@ -80,7 +119,7 @@ KD_Plot
 
 ```
 
-The same type of analysis can be performed by looking at my average K/D for each day that I have played.
+The same type of analysis can be performed by looking at my Net K/D for each day that I have played.
 
 ```{r KD_perDayPlot, echo=FALSE, message=FALSE, warning=FALSE}
 
@@ -99,19 +138,19 @@ KD_perDay_Plot <- ggplot(KD_perDay, aes(x = Date, y = `Net_K/D`))+
 KD_perDay_Plot
 
 ```
+Text
 
-A histogram shows the distribution of my K/D.
+```{r CumNetKD_Plot, echo = FALSE, message = FALSE, warning = FALSE}
 
-```{r KD_Hist, echo=FALSE, message=FALSE, warning=FALSE}
-
-KD_Hist <- ggplot(BFV, aes(x = `K/D`))+
-  geom_histogram(aes(fill = Class)) +
-  ggtitle("Distribution of K/D Results") +
-  labs(x = "Kills per Deaths", y = "Counts") +
+KD_CumulativeNetPlot <- ggplot(BFV, aes(x = Entry, y = `Cumulative_MeanNetKD`))+
+  geom_point(aes(color = GameMode, shape = Class), size = 2) + 
+  geom_smooth(method = 'lm', formula = y ~ x) +
+  ggtitle("Ascending Cumulative Mean Net KD") +
+  labs(x = "Game Entry", y = "Cumulative Mean Net Kills/Deaths") +
   plot
   
 
-KD_Hist
+KD_CumulativeNetPlot
 
 ```
 
@@ -119,9 +158,7 @@ We can look at the overall distribution of net K/D scores.
 
 ```{r NetKD_Hist, echo=FALSE, message=FALSE, warning=FALSE}
 
-Net <- BFV %>% mutate(`Net_K/D` = Kills-Deaths)
-
-NetKD_Hist <- ggplot(Net, aes(x = `Net_K/D`))+
+NetKD_Hist <- ggplot(BFV, aes(x = `Net_K/D`))+
   geom_histogram(bins = 30, aes(fill = Class)) +
   ggtitle("Distribution of Net K/D Results") +
   labs(x = "Net Kills per Deaths", y = "Counts") +
@@ -131,6 +168,23 @@ NetKD_Hist <- ggplot(Net, aes(x = `Net_K/D`))+
 NetKD_Hist
 
 ```
+
+Here we can see how my total kills per deaths are adding up over time
+
+```{r TotalNetKD_Plot, echo = FALSE, message = FALSE, warning = FALSE}
+
+KD_CumulativeTotNetPlot <- ggplot(BFV, aes(x = Entry, y = `Cumulative_TotalNetKD`))+
+  geom_point(aes(color = GameMode, shape = Class), size = 2) + 
+  geom_smooth(method = 'lm', formula = y ~ x) +
+  ggtitle("Ascending Cumulative Total Net KD") +
+  labs(x = "Game Entry", y = "Cumulative Total Net Kills/Deaths") +
+  plot
+  
+
+KD_CumulativeTotNetPlot
+
+```
+
 
 Gamescore can also be used as a metric of performance. The plot below indicates that the variation in the outcome for matches based on the type of game mode.
 
@@ -416,3 +470,4 @@ CurrentData_Plot <- ggplot(Current_Data, aes(x = Entry, y = `K/D`))+
 CurrentData_Plot
 
 ```
+
