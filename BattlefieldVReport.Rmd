@@ -99,7 +99,7 @@ Here is a brief overview of some of my statistics as a Battlefield V player. As 
 
 ```{r Overview_Stats, echo = FALSE, message = FALSE, warning = FALSE}
 
-paste0("I've tracked a total of ", ROWS, " rounds. During that the interval I have a total K/D of ", Total_KD, " (Kills = ", Kills, ", Deaths = ", Deaths, ").")
+paste0("I've tracked a total of ", ROWS, " rounds. During that interval I have a total K/D of ", Total_KD, " (Kills = ", Kills, ", Deaths = ", Deaths, ").")
 
 ```
 
@@ -227,15 +227,15 @@ Inspecting my average K/D per map it is evident that Fjell 652 and Panzerstorm a
 ```{r MapsKD_Plot, echo=FALSE, message=FALSE, warning=FALSE}
 
 MAP_KD <- BFV %>% group_by(Map, GameMode) %>%
-  summarize(Counts = n(), AVG_KD = mean(`K/D`))
+  summarize(Counts = n(), AVG_NetKD = mean(`Net_K/D`))
 
-MAP_KD$AVG_KD <- round(MAP_KD$AVG_KD, digits = 2)
+MAP_KD$AVG_KD <- round(MAP_KD$AVG_NetKD, digits = 2)
 
-MapKD_Plot <- ggplot(MAP_KD, aes(x = reorder(Map, AVG_KD, FUN = mean), y =  AVG_KD))+
+MapKD_Plot <- ggplot(MAP_KD, aes(x = reorder(Map, AVG_NetKD, FUN = mean), y =  AVG_NetKD))+
   geom_boxplot()+
   geom_point(aes(color = GameMode), size = 2)+
-  ggtitle("Average Kills per Death for each Map") +
-  labs(x = "Map", y = "Kills per Death") +
+  ggtitle("Average Net Kills per Death for each Map") +
+  labs(x = "Map", y = "Net Kills per Death") +
   plot
   
 MapKD_Plot
@@ -246,11 +246,11 @@ The above data are a bit strange as there doesn't seem to be any relation betwee
 
 ```{r MapMode_Plot, echo=FALSE, message=FALSE, warning=FALSE}
 
-MapCount_Plot <- ggplot(MAP_KD, aes(Counts, AVG_KD)) +
+MapCount_Plot <- ggplot(MAP_KD, aes(Counts, AVG_NetKD)) +
   geom_point(aes(color = Map, shape = GameMode), size = 2) +
   geom_smooth(method='lm',formula=y~x) +
-  ggtitle("Average KD per Map/Gamemode vs Times Played") +
-  labs(x = "Times Played", y = "Kills per Death") +
+  ggtitle("Average Net KD per Map/Gamemode vs Times Played") +
+  labs(x = "Times Played", y = "Net Kills per Death") +
   plot
   
 MapCount_Plot
@@ -286,11 +286,11 @@ The medic class was a natural fit for me as I overwhelmingly played assault in B
 
 Medic <- BFV %>% filter(Class == 'Medic')
 
-MedicKD_Plot <- ggplot(Medic, aes(x = Entry, y = `K/D`))+
+MedicKD_Plot <- ggplot(Medic, aes(x = Entry, y = `Net_K/D`))+
   geom_point(aes(color = GameMode, shape = Weapon), size = 2) + 
   geom_smooth(method = 'lm', formula = y ~ x) +
   ggtitle("Kills per Deaths over Time as Medic Class") +
-  labs(x = "Game Entry", y = "Kills/Deaths") +
+  labs(x = "Game Entry", y = "Net Kills/Deaths") +
   plot
   
 
@@ -303,15 +303,15 @@ It also appears as though my average is increasing over time while playing medic
 ```{r MedicMapsKD_Plot, echo=FALSE}
 
 MAPMedic_KD <- Medic %>% group_by(Map, GameMode) %>%
-  summarize(Counts = n(), AVG_KD = mean(`K/D`))
+  summarize(Counts = n(), AVG_NetKD = mean(`Net_K/D`))
 
-MAPMedic_KD$AVG_KD <- round(MAPMedic_KD$AVG_KD, digits = 2)
+MAPMedic_KD$AVG_NetKD <- round(MAPMedic_KD$AVG_NetKD, digits = 2)
 
-MapMedicKD_Plot <- ggplot(MAPMedic_KD, aes(x = reorder(Map, AVG_KD, FUN = mean), y =  AVG_KD))+
+MapMedicKD_Plot <- ggplot(MAPMedic_KD, aes(x = reorder(Map, AVG_NetKD, FUN = mean), y =  AVG_NetKD))+
   geom_boxplot()+
   geom_point(aes(color = GameMode), size = 2)+
-  ggtitle("Average Kills per Death for each Map") +
-  labs(x = "Map", y = "Kills per Death") +
+  ggtitle("Average Net Kills for each Map") +
+  labs(x = "Map", y = "Average Net Kills") +
   plot
   
 MapMedicKD_Plot
